@@ -1,0 +1,23 @@
+{
+	"name": "Twitgnostic",
+	"version": "0.33",
+	"manifest_version": 2,
+
+	"content_scripts": [{
+		"js": ["contentscript.js"],
+		"matches": ["http://twitter.com/*", "https://twitter.com/*"],
+		"all_frames": true
+	}],
+	
+	"permissions": [
+		"http://twitter.com/*", "https://twitter.com/*"
+	],
+	
+	"web_accessible_resources": ["livequery-111.min.js", "anon-timeline.js"],
+	
+	"icons": {
+		"16": "twitgnostic16.png",
+		"48": "twitgnostic48.png",
+		"128": "twitgnostic128.png"
+	}
+}
