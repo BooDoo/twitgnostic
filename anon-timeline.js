@@ -63,25 +63,23 @@ $('#gnosticon').on('click', function (e) {
 
 $(document).on('dataTweetConversationResult', function (e) {
 	if (gnosticState === 1) {
-	/*
-		console.log = console.__proto__.log;
-		convoExpandEvent = e;
-		console.log(convoExpandEvent);
-	*/
-		var convoExpandTarget = $(e.target);
-		var convoExpandTargetParent = $(convoExpandTarget).parent();
-		$(convoExpandTargetParent).on('change', function (e) {gnosticize(this);});
+	
+		// console.log = console.__proto__.log;
+		// convoExpandEvent = e;
+		// console.log(convoExpandEvent);
+		// var convoExpandTarget = $(e.target),
+		//	   convoExpandTargetParent = $(convoExpandTarget).parent();
+		// $(convoExpandTargetParent).on('change', function (e) {gnosticize(this);});
+	
 	}
 });
 
 $(document).on('uiHasInjectedTimelineItem', function (e) {
 	if (gnosticState === 1) {
-/*
-		console.log = console.__proto__.log;
-		injectedEvent = e;
-		console.log(injectedEvent));
-*/
-		gnosticize(injectedEvent.target);
+		// console.log = console.__proto__.log;
+		// console.log(e);
+		
+		gnosticize(e.target);
 	}
 });
 
@@ -159,8 +157,10 @@ function gnosticize(scope) {
 	}
 
   //.not('.rich-normalizer') ensures this odd data holder element stays {display:none;}
+	//TODO: Be more selective than ('*',scope)? Catches ~70 elements per tweet
 	scope = $('*',scope).not('.gnosticized').not('.rich-normalizer *');
-	
+	// console.log('Gnosticizing', scope.length, 'elements...')
+
 	//Don't obscure the login form!
 	if ($('.logged-out').length < 1) {
 		//Mark that gnosticization is active
@@ -271,6 +271,8 @@ function gnosticize(scope) {
 					this.href = '/search?q=%22' + anonHashtag + '%22&amp;src=tren';
 				}
 			});
+
+		// console.log('Done gnosticizing', scope.length, 'elements.')
 	}
 }
 
