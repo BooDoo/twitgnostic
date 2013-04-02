@@ -192,6 +192,7 @@ function gnosticize(scope) {
       
       o_mentions = o_mentions.split(' ');
       o_mentions.forEach(function(el, n, arr) {
+        //TODO! Also strip out author's name, incase they include a mention of themself in the RT (e.g. @IGLevine style)
         if (el.length != clientUsername.length || el.search(clientNameRE) < 0) {
           mentionDiff = el.length - anonUsername.length;
           if (mentionDiff > 0) {
@@ -203,8 +204,8 @@ function gnosticize(scope) {
         }
       });
       
-      $(this).data('mentions', new_mentions);
-      $(this).attr('data-mentions', new_mentions);
+      $(this).data('mentions', new_mentions.join(' '));
+      $(this).attr('data-mentions', new_mentions.join(' '));
     }
   });
 
