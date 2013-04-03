@@ -14,19 +14,24 @@ var anonAv = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAIAAADYYG7Q
 		injectedEvent = {},
 		sentXHRs = [], 
 		sentDatas = [], 
-		sentSettingses = [];
+		sentSettingses = [],
+		MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
 
 var anonCSS =		'.metadata.social-context, .social-context, .context, .follow-text, .verified, .stats, .tweet-stats-container, .bio, .location, ' +
                 '.url, .social-proof, #profile_popup.new-design .social-proof, #profile_popup .social-proof, .dogear, .view-profile, .profile-nav, ' +
                 '.metadata.social-context, .discover-nav, [data-name="similarTo"] {display: none;}' +
                 '.avatar {content:url("'+ anonAv +'");}' +
-                '.profile-header-inner {background-image:url("' + anonBG + '");}' +
+                '.profile-header-inner {background-image:url("' + anonBG + '") !important;}' +
                 '.username:before {content:"@' + anonUsername + '";font-size:12px;line-height:18px;visibility:visible;}' +
                 '.username {font-size:0px;visibility:hidden;}' +
                 '.fullname:before{content:"' + anonHandle + '";visibility:visible;font-size:14px;line-height:18px;}' +
                 '.fullname{visibility:hidden;font-size:0px;}' +
                 '.twitter-atreply:before{content:"@' + anonUsername + '";visibility:visible; font-family: Arial,sans-serif; font-size:14px;}' +
                 '.twitter-atreply{visibility:hidden;font-size:0px;}' + 
+                //Don't hide @mentions in text editor.
+                //TODO: Replace them with masked mentions! When did that stop working?
+                '.tweet-box.rich-editor .pretty-link {visibility: visible !important; font-size:13px !important;}' +
+                '.tweet-box.rich-editor .pretty-link:before {content:"" !important;}' +
                 '.rich-normalizer{display: none;}' + //Hide a phantom @user which appears when writing a reply.
                 //TODO: Intercept, replace with @user
                 '.message-drawer{display: none;}'; //Hide the "your tweet to @... has been sent message"
@@ -53,50 +58,105 @@ $(navRight).append(gnosticon);
 $('#gnosticon').on('click', function (e) { 
 	if (gnosticState === 0) {
 		document.head.appendChild(anonStyle);
+		var gnostTimer = $.now();
+		console.groupCollapsed('Starting gnosticize()', gnostTimer);
 		gnosticize();
+		console.log('FINISHED GNOSTICIZE():', $.now() - gnostTimer);
+		console.groupEnd();
 	} else {
 		document.head.removeChild(anonStyle);
-		//TODO: BUG! Hashtags stay gnosticized
+		//TODO: BUG! Trending Topics stay gnosticized
 		degnosticize();
 	}
 });
 
+$(document).on('uiTweetsDisplayed uiHasInjectedTimelineItem', function(e) {
+	if (gnosticState === 1) {
+		if (e.type === 'uiTweetsDisplayed') {
+			console.log(e);
+			var dispTimer = $.now();
+			console.groupCollapsed('Starting gnosticize() for displayed:', dispTimer);
+			gnosticize(e.target, true);
+			console.log('FINISHED GNOSTICIZE():', $.now() - dispTimer);
+			console.groupEnd();
+		}
+		else if (e.type === 'uiHasInjectedTimelineItem') {
+			var injectTimer = $.now();
+			console.groupCollapsed('Starting gnosticize() for injected:', injectTimer);
+			gnosticize(e.target);
+			console.log('FINISHED GNOSTICIZE():', $.now() - injectTimer);
+			console.groupEnd();
+		}
+	}
+});
+
+//Replaced below with the uiTweetsDisplayed event above
+/*
 $(document).on('dataTweetConversationResult', function (e) {
 	if (gnosticState === 1) {
 	
 		// console.log = console.__proto__.log;
-		// convoExpandEvent = e;
-		// console.log(convoExpandEvent);
-		// var convoExpandTarget = $(e.target),
-		//	   convoExpandTargetParent = $(convoExpandTarget).parent();
-		// $(convoExpandTargetParent).on('change', function (e) {gnosticize(this);});
-	
+		convoExpandEvent = e;
+		console.log(convoExpandEvent);
+		var convoExpandTarget = $(e.target),
+		    convoExpandTargetGrandParent = $(convoExpandTarget).parent().parent();
+		//$(convoExpandTargetParent).on('change', function (e) {
+		//	var gnostTimer = $.now();	
+		//	gnosticize(this);
+		//	console.log('FINISHED GNOSTICIZE():', $now() - gnostTimer);
+		//});
+		
+		gnosticize(convoExpandTargetParent);
+		console.log('FINISHED GNOSTICIZE():', $now() - gnostTimer);
+		console.groupEnd();
 	}
 });
-
+*/
+/*
 $(document).on('uiHasInjectedTimelineItem', function (e) {
 	if (gnosticState === 1) {
 		// console.log = console.__proto__.log;
 		// console.log(e);
-		
+		var gnostTimer = $.now();
+		console.groupCollapsed('Starting gnosticize() for injected:', gnostTimer);
 		gnosticize(e.target);
+		console.log('FINISHED GNOSTICIZE():', $.now() - gnostTimer);
+		console.groupEnd();
 	}
 });
+*/
 
-$('#profile_popup.has-content').livequery(function () {
+$(document).on('dataProfilePopupSuccess', function (e) {
 	if (gnosticState === 1) {
+		var gnostTimer = $.now();
+		console.groupCollapsed('Starting gnosticize() for profile:', gnostTimer);
 		gnosticize($('#profile_popup'));
-	}
+		console.log('FINISHED GNOSTICIZE():', $.now() - gnostTimer);
+		console.groupEnd();
+		var observer = new MutationObserver(function(mutations, observer) {
+      // fired when a mutation occurs
+      console.log(mutations);
+      $.each(mutations, function (n, el) {
+        if (el.addedNodes.length !== 0 && gnosticState === 1) {
+          var profTimer = $.now();
+          console.log(this);
+          console.groupCollapsed('Starting gnosticize() for a profile:', profTimer);
+          gnosticize(this.target);
+          console.log('FINISHED GNOSTICIZE():', $.now() - profTimer);
+      }
+      });
+      // ...
+		});
+		observer.observe($('#profile_popup').get(0), {childList:true, subtree:true});
+	}	
 });
 
+//Disabling livequery calls: impact?
+/*
 $('.my-tweet').livequery(function () {
 	if (gnosticState === 1) {gnosticize($('.my-tweet'));}
 });
-
-$('#profile_popup .profile-header-inner').livequery(function() {
-	$(this).removeAttr('style');
-	$('#profile_popup a.profile-picture')[0].href = '/';
-});
+*/
 
 var sendTweetEvent = {};
 $(document).on("uiSendTweet", function (e) {
@@ -106,7 +166,6 @@ $(document).on("uiSendTweet", function (e) {
 });
 
 //Reverse maskMentions() before sending tweet
-//TODO! Do this to all tweetBox content when degnosticating so @user... doesn't stick around after!
 $.ajaxSetup({
 	beforeSend: function(req, settings) {
 		console.log = console.__proto__.log; 
@@ -136,6 +195,11 @@ $.ajaxSetup({
 			}
 			//console.log(settings.data);
 		}
+    else if (settings.url.indexOf('/trends') > -1) {
+      if (gnosticState === 1) {
+        return false;
+      }
+    }
 	}
 });
 
@@ -148,26 +212,52 @@ $(document).on("uiShowMessage dataGotProfileStats uiDidRetweet uiDidUnretweet ui
 });
 */
 
-//TODO! Use $('#doc').ajaxComplete() to ensure gnosticizer is run where missing when going between Home/Interactions &c.
+function gnosticize(context, stopAtFirst) {
+  var scope,
+      toAct = [];
+  //Assume document scope if none given.
+  if(typeof context === 'undefined') {
+  	context = document;	
+  }
 
-function gnosticize(scope) {
-	//Assume document scope if none give)n.
-	if(typeof scope === 'undefined') {
-		scope = document;	
-	}
+  //.not('.rich-normalizer') ensures an odd data holder element stays {display:none;}
+  //TODO: Make sure narrower selector is working. Currently: not working on Trending Topics!
+  var firstScopeTimer = $.now();
+  scope = $('.tweet, .account-group, .pretty-link, .twitter-atreply .js-action-profile-name, .js-user-tipsy,' +
+             '.avatar.js-tooltip', context).not('.rich-normalizer *, .twitter-hashtag');
+  console.log('Finished first scope selector:', $.now()-firstScopeTimer);
 
-  //.not('.rich-normalizer') ensures this odd data holder element stays {display:none;}
-	//TODO: Be more selective than ('*',scope)? Catches ~70 elements per tweet
-	scope = $('*',scope).not('.gnosticized').not('.rich-normalizer *');
-	// console.log('Gnosticizing', scope.length, 'elements...')
+  //Stop at the first gnosticized element, to prevent iterating over the whole timeline when new tweets are added.
+  //TODO: Check GET request for since_id || max_id; perform since_id as below, max_id should be inverted
+  if (stopAtFirst) {
+  	var secondScopeTimer = $.now();
+  	scope = $(scope).each(function (n, el) {
+  		if ($(this).hasClass('gnosticized')) {
+  			console.log('Stopping at:',n);
+  			//console.log(this);
+  			return false;
+  		}
+  		else {
+  			toAct.push(this);
+  		}
+  	});
+  	console.log('Finished refining scope to new since gnosticized', $.now() - secondScopeTimer, 'ms');
 
-	//Don't obscure the login form!
-	if ($('.logged-out').length < 1) {
-		//Mark that gnosticization is active
-		gnosticState = 1;
-	
+  	scope = toAct;
+  }
+
+  console.log('Gnosticizing', scope.length, 'elements...')
+
+  //Don't obscure the login form!
+  if ($('.logged-out').length < 1) {
+  	//Mark that gnosticization is active
+  	gnosticState = 1;
+
   //Strip @mention and username data used to derive reply default content by extractMentionsForReply
   //Pretty sure this is what causes the long-ish init time on the extension. Not sure if it matters
+  console.log = console.__proto__.log;
+  var tweetsTimer = $.now();
+  //console.log('Starting on tweets:', tweetsTimer);
   $('.tweet', scope).each(function (i, tweet) {
     var o_screenName = $(this).data('screenName'),
       screenNameDiff = o_screenName.length - anonUsername.length,
@@ -207,73 +297,92 @@ function gnosticize(scope) {
       $(this).data('mentions', new_mentions.join(' '));
       $(this).attr('data-mentions', new_mentions.join(' '));
     }
-  });
+    });
+    console.log('Finished with tweets:', $.now() - tweetsTimer, 'ms');
+      //TODO: Abstract out? iterate through $(this).attributes and $(this).data() and store all orig values?
+    	
+      //Remove links to users' profiles, leave hashtag links
+      var profileTimer = $.now();
+      //console.log('Starting profile link-scrubbing', profileTimer);
+    	$('.account-group, .pretty-link, .twitter-atreply, .js-action-profile-name', scope).not('.twitter-hashtag')
+    		.each(function (i) {
+    			$(this).addClass('gnosticized');
+    			$(this).data('orighref', this.href);
+    			this.href = '/';
+    		});
+    	console.log('Finished profile link-scrubbing', $.now() - profileTimer, 'ms');
 
-    //TODO: Abstract out? iterate through $(this).attributes and $(this).data() and store all orig values?
-		
-    //Remove links to users' profiles
-		$('.account-group, .pretty-link, .twitter-atreply .js-action-profile-name', scope)
-			.each(function (i) {
-				$(this).addClass('gnosticized');
-				$(this).data('orighref', this.href);
-				this.href = '/';
-			});
-	
-		//Anonymize generic title tooltips for user avatars:
-		$('.js-user-tipsy', scope)
-			.each(function (i) {
-				$(this).addClass('gnosticized');
-				$(this).data('origtitle', this.title);
-				this.title = anonHandle;
+    	//Anonymize generic title tooltips for user avatars:
+    	var titleTimer = $.now();
+    	//console.log('Starting avatar title-scrubbing', titleTimer);
+    	$('.js-user-tipsy', scope)
+    		.each(function (i) {
+    			$(this).addClass('gnosticized');
+    			$(this).data('origtitle', this.title);
+    			this.title = anonHandle;
 
-				$(this).data('orighref', this.href);
-				this.href = '/';
-			});
+    			$(this).data('orighref', this.href);
+    			this.href = '/';
+    		});
+    	console.log('Finished avatar title-scrubbing', $.now() - titleTimer, 'ms');
 
-		//Anonymize twitter custom tooltips for user avatars:
-		$('.avatar.js-tooltip', scope)
-			.each(function (i) {
-				$(this).addClass('gnosticized');
-				$(this).data('origalt', this.alt);
-				$(this).data('origdata-original-title', this.alt);
+    	//Anonymize twitter custom tooltips for user avatars:
+    	var tooltipTimer = $.now();
+    	//console.log('Starting avatar tooltip-scrubbing', tooltipTimer);
+    	$('.avatar.js-tooltip', scope)
+    		.each(function (i) {
+    			$(this).addClass('gnosticized');
+    			$(this).data('origalt', this.alt);
+    			$(this).data('origdata-original-title', this.alt);
 
-				this.alt = anonHandle;
-				if ($(this).attr('data-original-title')) {
-					$(this).attr('data-original-title', anonHandle);
-				}
-				if (this.title !== "") {
-					this.title = anonHandle;
-				}
-			});
+    			this.alt = anonHandle;
+    			if ($(this).attr('data-original-title')) {
+    				$(this).attr('data-original-title', anonHandle);
+    			}
+    			if (this.title !== "") {
+    				this.title = anonHandle;
+    			}
+    		});
+    	console.log('Finished avatar tooltip-scrubbing', $.now() - tooltipTimer, 'ms');
 
-		//Replace mentions of username in dropdown list with anonUsername:
-		$('.mention-text, .block-text, .unblock-text, .report-spam-text', scope).each(function (i) {
-			var inner = this.innerText;
-			$(this).addClass('gnosticized');
-			$(this).data('originnerText', inner);
-			this.innerText = inner.substr(0, inner.indexOf('@') + 1) + anonUsername;
-			if (inner.indexOf('for Spam') > -1) {
-				this.innerText += ' for Spam';
-			}
-		});
+    	//Replace mentions of username in dropdown list with anonUsername:
+    	var actionsTimer = $.now();
+    	//console.log('Starting actions dropdown username-scrubbing', actionsTimer);
+    	$('.mention-text, .block-text, .unblock-text, .report-spam-text', document).each(function (i) {
+    		var inner = this.innerText;
+    		$(this).addClass('gnosticized');
+    		$(this).data('originnerText', inner);
+    		this.innerText = inner.substr(0, inner.indexOf('@') + 1) + anonUsername;
+    		if (inner.indexOf('for Spam') > -1) {
+    			this.innerText += ' for Spam';
+    		}
+    	});
+    	console.log('Finished actions dropdown username-scrubbing', $.now() - actionsTimer, 'ms');
 
-		//Anonymize hashtags in the Trending Topics panel
-		$('.js-trend-item .js-nav', scope)
-			.each(function (i){
-				$(this).addClass('gnosticized');
-				$(this).data('originnerText', this.innerText);
-				$(this).data('orighref', this.href);
-				if (i === 0) {
-					this.innerText = '#PROMOTED' + anonHashtag;
-					this.href = '/search?q=%22PROMOTED' + anonHashtag + '%22&amp;src=tren';
-				} else {
-					this.innerText = '#' + anonHashtag;
-					this.href = '/search?q=%22' + anonHashtag + '%22&amp;src=tren';
-				}
-			});
+    if (context === document) {
+    	//Anonymize hashtags in the Trending Topics panel
+    	var trendTimer = $.now();
+    	//console.log('Starting trending topics-scrubbing', trendTimer);
+    	$('.js-trend-item .js-nav', document)
+    		.each(function (i){
+          console.log(this)
+    			$(this).addClass('gnosticized');
+    			$(this).data('originnerText', this.innerText);
+    			$(this).data('orighref', this.href);
+    			if (i === 0) {
+    				this.innerText = '#PROMOTED' + anonHashtag;
+    				this.href = '/search?q=%22PROMOTED' + anonHashtag + '%22&amp;src=tren';
+    			} else {
+    				this.innerText = '#' + anonHashtag;
+    				this.href = '/search?q=%22' + anonHashtag + '%22&amp;src=tren';
+    			}
+    		});
+    	console.log('Finished trending topics-scrubbing:', $.now() - trendTimer, 'ms');
+    }
 
-		// console.log('Done gnosticizing', scope.length, 'elements.')
-	}
+  console.log('Done gnosticizing', scope.length, 'elements:', $.now());
+  console.groupEnd();
+  }
 }
 
 function degnosticize(scope) {
