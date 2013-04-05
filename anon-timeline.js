@@ -80,6 +80,7 @@ $(document).on('uiTweetsDisplayed uiHasInjectedTimelineItem', function(e) {
 			console.log('FINISHED GNOSTICIZE():', $.now() - dispTimer);
 			console.groupEnd();
 		}
+    /* Removing temporarily to profile TweetsDisplayed alone
 		else if (e.type === 'uiHasInjectedTimelineItem') {
 			var injectTimer = $.now();
 			console.groupCollapsed('Starting gnosticize() for injected:', injectTimer);
@@ -87,6 +88,7 @@ $(document).on('uiTweetsDisplayed uiHasInjectedTimelineItem', function(e) {
 			console.log('FINISHED GNOSTICIZE():', $.now() - injectTimer);
 			console.groupEnd();
 		}
+    */
 	}
 });
 
@@ -223,8 +225,7 @@ function gnosticize(context, stopAtFirst) {
   //.not('.rich-normalizer') ensures an odd data holder element stays {display:none;}
   //TODO: Make sure narrower selector is working. Currently: not working on Trending Topics!
   var firstScopeTimer = $.now();
-  scope = $('.tweet, .account-group, .pretty-link, .twitter-atreply .js-action-profile-name, .js-user-tipsy,' +
-             '.avatar.js-tooltip', context).not('.rich-normalizer *, .twitter-hashtag');
+  scope = $(context).not('.rich-normalizer *, .twitter-hashtag');
   console.log('Finished first scope selector:', $.now()-firstScopeTimer);
 
   //Stop at the first gnosticized element, to prevent iterating over the whole timeline when new tweets are added.
@@ -258,7 +259,7 @@ function gnosticize(context, stopAtFirst) {
   console.log = console.__proto__.log;
   var tweetsTimer = $.now();
   //console.log('Starting on tweets:', tweetsTimer);
-  $('.tweet', scope).each(function (i, tweet) {
+  $('.tweet', scope).not('.gnosticized').each(function (i, tweet) {
     var o_screenName = $(this).data('screenName'),
       screenNameDiff = o_screenName.length - anonUsername.length,
       new_screenName,
@@ -277,19 +278,19 @@ function gnosticize(context, stopAtFirst) {
     }
     
     if (o_mentions && typeof $(this).data('datamentions') === 'undefined') {
-      //TODO: Mmove to named function? maskMentions(tweet)
+      //TODO: Move to named function? maskMentions(tweet)
       $(this).data('datamentions', o_mentions);
       
       o_mentions = o_mentions.split(' ');
       o_mentions.forEach(function(el, n, arr) {
         //TODO! Also strip out author's name, incase they include a mention of themself in the RT (e.g. @IGLevine style)
-        if (el.length != clientUsername.length || el.search(clientNameRE) < 0) {
+        if (el !== clientUsername || el !== o_screenName || el.search(clientNameRE) < 0) {
           mentionDiff = el.length - anonUsername.length;
           if (mentionDiff > 0) {
-            new_mentions[n] = anonUsername + Array(mentionDiff+1).join(n);
+            new_mentions.push(anonUsername + Array(mentionDiff+1).join(n));
           }
           else {
-            new_mentions[n] = anonUsername;
+            new_mentions.push(anonUsername);
           }
         }
       });
@@ -305,7 +306,7 @@ function gnosticize(context, stopAtFirst) {
       var profileTimer = $.now();
       //console.log('Starting profile link-scrubbing', profileTimer);
     	$('.account-group, .pretty-link, .twitter-atreply, .js-action-profile-name', scope).not('.twitter-hashtag')
-    		.each(function (i) {
+    		.not('.gnosticized').each(function (i) {
     			$(this).addClass('gnosticized');
     			$(this).data('orighref', this.href);
     			this.href = '/';
@@ -316,7 +317,7 @@ function gnosticize(context, stopAtFirst) {
     	var titleTimer = $.now();
     	//console.log('Starting avatar title-scrubbing', titleTimer);
     	$('.js-user-tipsy', scope)
-    		.each(function (i) {
+    		.not('.gnosticized').each(function (i) {
     			$(this).addClass('gnosticized');
     			$(this).data('origtitle', this.title);
     			this.title = anonHandle;
@@ -330,7 +331,7 @@ function gnosticize(context, stopAtFirst) {
     	var tooltipTimer = $.now();
     	//console.log('Starting avatar tooltip-scrubbing', tooltipTimer);
     	$('.avatar.js-tooltip', scope)
-    		.each(function (i) {
+    		.not('.gnosticized').each(function (i) {
     			$(this).addClass('gnosticized');
     			$(this).data('origalt', this.alt);
     			$(this).data('origdata-original-title', this.alt);
@@ -348,24 +349,23 @@ function gnosticize(context, stopAtFirst) {
     	//Replace mentions of username in dropdown list with anonUsername:
     	var actionsTimer = $.now();
     	//console.log('Starting actions dropdown username-scrubbing', actionsTimer);
-    	$('.mention-text, .block-text, .unblock-text, .report-spam-text', document).each(function (i) {
-    		var inner = this.innerText;
-    		$(this).addClass('gnosticized');
-    		$(this).data('originnerText', inner);
-    		this.innerText = inner.substr(0, inner.indexOf('@') + 1) + anonUsername;
-    		if (inner.indexOf('for Spam') > -1) {
-    			this.innerText += ' for Spam';
-    		}
-    	});
+    	$('.mention-text, .block-text, .unblock-text, .report-spam-text', document)
+        .not('.gnosticized').each(function (i) {
+      		var inner = this.innerText;
+      		$(this).addClass('gnosticized');
+      		$(this).data('originnerText', inner);
+      		this.innerText = inner.substr(0, inner.indexOf('@') + 1) + anonUsername;
+      		if (inner.indexOf('for Spam') > -1) {
+      			this.innerText += ' for Spam';
+      		}
+    	  });
     	console.log('Finished actions dropdown username-scrubbing', $.now() - actionsTimer, 'ms');
 
-    if (context === document) {
     	//Anonymize hashtags in the Trending Topics panel
     	var trendTimer = $.now();
     	//console.log('Starting trending topics-scrubbing', trendTimer);
     	$('.js-trend-item .js-nav', document)
-    		.each(function (i){
-          console.log(this)
+    		.not('.gnosticized').each(function (i){
     			$(this).addClass('gnosticized');
     			$(this).data('originnerText', this.innerText);
     			$(this).data('orighref', this.href);
@@ -378,7 +378,6 @@ function gnosticize(context, stopAtFirst) {
     			}
     		});
     	console.log('Finished trending topics-scrubbing:', $.now() - trendTimer, 'ms');
-    }
 
   console.log('Done gnosticizing', scope.length, 'elements:', $.now());
   console.groupEnd();
