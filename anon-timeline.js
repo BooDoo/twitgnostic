@@ -17,7 +17,7 @@ var anonAv = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAIAAADYYG7Q
 		sentSettingses = [],
 		MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
 
-var anonCSS =		'.metadata.social-context, .social-context, .context, .follow-text, .verified, .stats, .tweet-stats-container, .bio, .location, ' +
+var anonCSS =	'.metadata.social-context, .social-context, .context, .follow-text, .verified, .stats, .tweet-stats-container, .bio, .location, ' +
                 '.url, .social-proof, #profile_popup.new-design .social-proof, #profile_popup .social-proof, .dogear, .view-profile, .profile-nav, ' +
                 '.metadata.social-context, .discover-nav, [data-name="similarTo"] {display: none;}' +
                 '.avatar {content:url("'+ anonAv +'");}' +
@@ -261,11 +261,12 @@ function gnosticize(context, stopAtFirst) {
   //console.log('Starting on tweets:', tweetsTimer);
   $('.tweet', scope).not('.gnosticized').each(function (i, tweet) {
     var o_screenName = $(this).data('screenName'),
-      screenNameDiff = o_screenName.length - anonUsername.length,
-      new_screenName,
-      o_mentions = $(this).data('mentions'),
-      new_mentions = [],
-      mentionDiff;
+        screenNameRE = new RegExp(o_screenName, 'i'),
+        screenNameDiff = o_screenName.length - anonUsername.length,
+        new_screenName,
+        o_mentions = $(this).data('mentions'),
+        new_mentions = [],
+        mentionDiff;
     
     $(this).addClass('gnosticized');
     
@@ -284,7 +285,7 @@ function gnosticize(context, stopAtFirst) {
       o_mentions = o_mentions.split(' ');
       o_mentions.forEach(function(el, n, arr) {
         //TODO! Also strip out author's name, incase they include a mention of themself in the RT (e.g. @IGLevine style)
-        if (el !== clientUsername || el !== o_screenName || el.search(clientNameRE) < 0) {
+        if (el.search(screenNameRE) < 0 && el.search(clientNameRE) < 0) {
           mentionDiff = el.length - anonUsername.length;
           if (mentionDiff > 0) {
             new_mentions.push(anonUsername + Array(mentionDiff+1).join(n));
@@ -310,7 +311,7 @@ function gnosticize(context, stopAtFirst) {
     			$(this).addClass('gnosticized');
     			$(this).data('orighref', this.href);
     			this.href = '/';
-    		});
+    	});
     	console.log('Finished profile link-scrubbing', $.now() - profileTimer, 'ms');
 
     	//Anonymize generic title tooltips for user avatars:
@@ -324,7 +325,7 @@ function gnosticize(context, stopAtFirst) {
 
     			$(this).data('orighref', this.href);
     			this.href = '/';
-    		});
+    	});
     	console.log('Finished avatar title-scrubbing', $.now() - titleTimer, 'ms');
 
     	//Anonymize twitter custom tooltips for user avatars:
@@ -343,7 +344,7 @@ function gnosticize(context, stopAtFirst) {
     			if (this.title !== "") {
     				this.title = anonHandle;
     			}
-    		});
+    	});
     	console.log('Finished avatar tooltip-scrubbing', $.now() - tooltipTimer, 'ms');
 
     	//Replace mentions of username in dropdown list with anonUsername:
@@ -358,7 +359,7 @@ function gnosticize(context, stopAtFirst) {
       		if (inner.indexOf('for Spam') > -1) {
       			this.innerText += ' for Spam';
       		}
-    	  });
+    	});
     	console.log('Finished actions dropdown username-scrubbing', $.now() - actionsTimer, 'ms');
 
     	//Anonymize hashtags in the Trending Topics panel
@@ -376,7 +377,7 @@ function gnosticize(context, stopAtFirst) {
     				this.innerText = '#' + anonHashtag;
     				this.href = '/search?q=%22' + anonHashtag + '%22&amp;src=tren';
     			}
-    		});
+    	});
     	console.log('Finished trending topics-scrubbing:', $.now() - trendTimer, 'ms');
 
   console.log('Done gnosticizing', scope.length, 'elements:', $.now());
