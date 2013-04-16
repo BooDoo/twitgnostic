@@ -1,6 +1,6 @@
 {
 	"name": "Twitgnostic",
-	"version": "0.33",
+	"version": "0.42",
 	"manifest_version": 2,
 
 	"content_scripts": [{
@@ -13,7 +13,7 @@
 		"http://twitter.com/*", "https://twitter.com/*"
 	],
 	
-	"web_accessible_resources": ["livequery-111.min.js", "anon-timeline.js"],
+	"web_accessible_resources": ["anon-timeline.min.js", "anon-timeline.js"],
 	
 	"icons": {
 		"16": "twitgnostic16.png",

@@ -59,10 +59,10 @@ $('#gnosticon').on('click', function (e) {
 	if (gnosticState === 0) {
 		document.head.appendChild(anonStyle);
 		var gnostTimer = $.now();
-		console.groupCollapsed('Starting gnosticize()', gnostTimer);
+		// console.groupCollapsed('Starting gnosticize()', gnostTimer);
 		gnosticize();
-		console.log('FINISHED GNOSTICIZE():', $.now() - gnostTimer);
-		console.groupEnd();
+		// console.log('FINISHED GNOSTICIZE():', $.now() - gnostTimer);
+		// console.groupEnd();
 	} else {
 		document.head.removeChild(anonStyle);
 		//TODO: BUG! Trending Topics stay gnosticized
@@ -73,78 +73,74 @@ $('#gnosticon').on('click', function (e) {
 $(document).on('uiTweetsDisplayed uiHasInjectedTimelineItem', function(e) {
 	if (gnosticState === 1) {
 		if (e.type === 'uiTweetsDisplayed') {
-			console.log(e);
+			// console.log(e);
 			var dispTimer = $.now();
-			console.groupCollapsed('Starting gnosticize() for displayed:', dispTimer);
+			// console.groupCollapsed('Starting gnosticize() for displayed:', dispTimer);
 			gnosticize(e.target, true);
-			console.log('FINISHED GNOSTICIZE():', $.now() - dispTimer);
-			console.groupEnd();
+			// console.log('FINISHED GNOSTICIZE():', $.now() - dispTimer);
+			// console.groupEnd();
 		}
-    /* Removing temporarily to profile TweetsDisplayed alone
-		else if (e.type === 'uiHasInjectedTimelineItem') {
-			var injectTimer = $.now();
-			console.groupCollapsed('Starting gnosticize() for injected:', injectTimer);
-			gnosticize(e.target);
-			console.log('FINISHED GNOSTICIZE():', $.now() - injectTimer);
-			console.groupEnd();
-		}
-    */
+    // Removing temporarily to profile TweetsDisplayed alone
+		//else if (e.type === 'uiHasInjectedTimelineItem') {
+			//var injectTimer = $.now();
+			// console.groupCollapsed('Starting gnosticize() for injected:', injectTimer);
+			//gnosticize(e.target);
+			// console.log('FINISHED GNOSTICIZE():', $.now() - injectTimer);
+			// console.groupEnd();
+		//}
+    
 	}
 });
 
 //Replaced below with the uiTweetsDisplayed event above
-/*
+
 $(document).on('dataTweetConversationResult', function (e) {
 	if (gnosticState === 1) {
-	
-		// console.log = console.__proto__.log;
-		convoExpandEvent = e;
-		console.log(convoExpandEvent);
-		var convoExpandTarget = $(e.target),
-		    convoExpandTargetGrandParent = $(convoExpandTarget).parent().parent();
-		//$(convoExpandTargetParent).on('change', function (e) {
-		//	var gnostTimer = $.now();	
-		//	gnosticize(this);
-		//	console.log('FINISHED GNOSTICIZE():', $now() - gnostTimer);
-		//});
-		
-		gnosticize(convoExpandTargetParent);
-		console.log('FINISHED GNOSTICIZE():', $now() - gnostTimer);
-		console.groupEnd();
+    // console.log(e);
+    var eventTarget = e.target;
+    setTimeout(function() {
+      // console.groupCollapsed("Running from setTimeout...")
+  		var gnostTarget = $(eventTarget).parent().parent(),
+          convTimer = $.now();
+  		
+  		gnosticize(gnostTarget);
+  		// console.log('FINISHED GNOSTICIZE():', $.now() - convTimer);
+  		// console.groupEnd();
+    }, 500);
 	}
 });
-*/
-/*
+
+
 $(document).on('uiHasInjectedTimelineItem', function (e) {
 	if (gnosticState === 1) {
-		// console.log = console.__proto__.log;
+		console.log = console.__proto__.log;
 		// console.log(e);
 		var gnostTimer = $.now();
-		console.groupCollapsed('Starting gnosticize() for injected:', gnostTimer);
+		// console.groupCollapsed('Starting gnosticize() for injected:', gnostTimer);
 		gnosticize(e.target);
-		console.log('FINISHED GNOSTICIZE():', $.now() - gnostTimer);
-		console.groupEnd();
+		// console.log('FINISHED GNOSTICIZE():', $.now() - gnostTimer);
+		// console.groupEnd();
 	}
 });
-*/
+
 
 $(document).on('dataProfilePopupSuccess', function (e) {
 	if (gnosticState === 1) {
 		var gnostTimer = $.now();
-		console.groupCollapsed('Starting gnosticize() for profile:', gnostTimer);
+		// console.groupCollapsed('Starting gnosticize() for profile:', gnostTimer);
 		gnosticize($('#profile_popup'));
-		console.log('FINISHED GNOSTICIZE():', $.now() - gnostTimer);
-		console.groupEnd();
+		// console.log('FINISHED GNOSTICIZE():', $.now() - gnostTimer);
+		// console.groupEnd();
 		var observer = new MutationObserver(function(mutations, observer) {
       // fired when a mutation occurs
-      console.log(mutations);
+      // console.log(mutations);
       $.each(mutations, function (n, el) {
         if (el.addedNodes.length !== 0 && gnosticState === 1) {
           var profTimer = $.now();
-          console.log(this);
-          console.groupCollapsed('Starting gnosticize() for a profile:', profTimer);
+          // console.log(this);
+          // console.groupCollapsed('Starting gnosticize() for a profile:', profTimer);
           gnosticize(this.target);
-          console.log('FINISHED GNOSTICIZE():', $.now() - profTimer);
+          // console.log('FINISHED GNOSTICIZE():', $.now() - profTimer);
       }
       });
       // ...
@@ -153,17 +149,10 @@ $(document).on('dataProfilePopupSuccess', function (e) {
 	}	
 });
 
-//Disabling livequery calls: impact?
-/*
-$('.my-tweet').livequery(function () {
-	if (gnosticState === 1) {gnosticize($('.my-tweet'));}
-});
-*/
-
 var sendTweetEvent = {};
 $(document).on("uiSendTweet", function (e) {
 	console.log = console.__proto__.log;
-	console.log(e);
+	// console.log(e);
 	sendTweetEvent = e;
 });
 
@@ -172,30 +161,33 @@ $.ajaxSetup({
 	beforeSend: function(req, settings) {
 		console.log = console.__proto__.log; 
 		if (settings.url === '/i/tweet/create' && gnosticState === 1) {
-			console.log(settings.data); 
+			// console.log(settings.data); 
 			sentXHRs.push(req); 
 			sentSettingses.push(settings);
 			sentDatas.push(settings.data); 
 			var replyTarget = $('[data-tweet-id="' + settings.data.match(/in_reply_to_status_id=\d+(?=&)/).toString().substr(22) + '"]')[0],
           targetMentions = $(replyTarget).data('datamentions'),
 					maskedMentions = $(replyTarget).data('mentions'),
-					targetAuthor = $(replyTarget).data('datascreenName'),
-					lengthDiff = targetAuthor.length - anonUsername.length,
-					authorRE = new RegExp((lengthDiff > 0) ? anonUsername + Array(lengthDiff + 1).join('.') : anonUsername, 'i');
+					targetAuthor = $(replyTarget).data('datascreenName');
 
-			settings.data = settings.data.replace(authorRE, targetAuthor);
-			
+          if (!clientNameRE.test(targetAuthor)) {
+  					var lengthDiff = targetAuthor.length - anonUsername.length,
+  					    authorRE = new RegExp(lengthDiff > 0 ? anonUsername + Array(lengthDiff + 1).join('\.'): anonUsername, 'i');
+            
+            settings.data = settings.data.replace(authorRE, targetAuthor);
+          }
+
 			if (targetMentions && maskedMentions) {
-				targetMentions = targetMentions.split(' ');
-				maskedMentions = maskedMentions.split(' ');
+        targetMentions = targetMentions.replace(clientNameRE, "").replace(/\s\s+/," ").trim().split(' ');
+        maskedMentions = maskedMentions.split(' ');
+        console.log("Checking", targetMentions, "against", maskedMentions);
         targetMentions.forEach(function (el, n, arr) {
-					if (el.length != clientUsername.length || el.search(clientNameRE) < 0) {
-						settings.data = settings.data.replace(maskedMentions[n], el);
-						// console.log('Replaced ' + maskedMentions[n] + ' with ' + targetMentions[n]);
-					}
-				});
-			}
+            settings.data = settings.data.replace(maskedMentions[n], el);
+            console.log('Replaced ' + maskedMentions[n] + ' with ' + targetMentions[n]);
+        });
+      }
 			//console.log(settings.data);
+      //return false; //Prevents submitting post
 		}
     else if (settings.url.indexOf('/trends') > -1) {
       if (gnosticState === 1) {
@@ -207,12 +199,12 @@ $.ajaxSetup({
 
 
 //Send all known events to the log
-/*
+
 $(document).on("uiShowMessage dataGotProfileStats uiDidRetweet uiDidUnretweet uiDidDeleteTweet uiDidFavoriteTweet uiDidUnfavoriteTweet uiGetTweet uiHasInjectedTimelineItem uiShouldFixMargins uiPermalinkClick uiOpenSigninOrSignupDialog dataDidDeleteTweet dataDidRetweet dataDidUnretweet dataFailedToUnfavoriteTweet dataFailedToFavoriteTweet dataFailedToUnretweet dataFailedToRetweet uiDidFavoriteTweetToggle uiDidRetweetTweetToggle uiDidReplyTweetToggle uiBeforePageChanged uiOpenConfirmDialog uiOpenTweetDialog uiOpenDMConversation uiFollowStateChange dataFollowStateChange uiFollowAction uiUnfollowAction uiCancelFollowRequestAction uiBlockAction uiReportSpamAction uiUnblockAction uiRetweetOnAction dataRetweetOnAction uiRetweetOffAction dataRetweetOffAction uiDeviceNotificationsOnAction dataDeviceNotificationsOnAction uiDeviceNotificationsOffAction dataDeviceNotificationsOffAction uiShowMobileNotificationsConfirm uiShowPushTweetsNotificationsConfirm uiShowProfilePopup uiItemLinkClick uiHasExpandedTweet uiHasCollapsedTweet dataTweetSuccess uiExpandFocus uiTweetBoxExpanded uiInitTweetbox uiRequestActivityPopup uiHasRenderedTweetSocialProof dataTweetConversationResult dataTweetSocialProofResult uiWantsMediaForTweet uiNeedsTweetExpandedContent uiShouldToggleExpandedState uiWantsToCloseAllTweets uiHasInjectedNewTimeline uiPageChanged dataDidResolveUrl uiWantsLinkResolution uiFlagConfirmation uiFlagMedia uiUpdateViewPossiblySensitive uiHasAddedLegacyMediaIcon dataTrendsRefreshed dataGotTrendsDialog dataTrendsLocationChanged dataPageMutated uiWantsTrendsDialog uiChangeTrendsLocation uiRefreshTrends uiTrendSelected uiTrendsDisplayed uiTweetsDisplayed uiTrendsDialogOpened uiShowTrendsLocationDialog dataGotTrendsDialogError uiNearTheTop uiNearTheBottom uiTimelineReset dataGotMoreTimelineItems dataGotMoreTimelineItemsError uiWantsMoreTimelineItems uiFetchActivityPopup dataActivityPopupSuccess dataActivityPopupError uiOpenTweetDialogWithOptions dataTweetExpansionError dataUpdatedViewPossiblySensitiveResult uiShowError dataHelpPipsLoaded dataHelpPipsError uiHelpPipExplainTriggered uiHelpPipPromptFollowed uiHelpPipExplainFollowed uiHelpPipIconClicked uiHelpPipExplainClicked uiHelpPipOpened uiHelpPipDismissed uiHelpPipIconAdded uiShortcutCloseAll uiInjectNewItems uiShortcutSelectPrev uiShortcutSelectNext uiShortcutEnter uiShortcutGotoTopOfScreen uiSelectTopTweet uiShortcutFavorite uiShortcutRetweet uiShortcutReply uiWantsToRefreshTimestamps uiHasDisabledAutoplay uiHasEnabledAutoplay uiTimelineShouldRefresh uiTimelinePollForNewItems uiAddPageCount uiHasInjectedOldTimelineItems uiGetUserRecommendations uiUsersDisplayed uiDidGetRecommendations dataDidGetUserRecommendations dataFailedToGetUserRecommendations uiDismissUserRecommendation uiDidDismissUserRecommendation uiClickedWtfLink dataDidDismissRecommendation dataFailedToDismissUserRecommendation uiDidHideEmptyTimelineModule uiSwiftLoaded uiDidDismissEmptyTimelineRecommendations dataDidExcludeUserRecommendations uiRefreshUserRecommendations uiPromptbirdDismissPrompt uiPromptbirdSetLanguage uiPromptbirdDoOneClickImport uiPromptbirdDoInlineContactImport uiPromptbirdClick dataPromptbirdDidOneClickImport dataPromptbirdLanguageChangeSuccess uiOpenGallery dataUserHasUnreadDMs dataUserHasNoUnreadDMs uiMediaThumbnailsVisible uiMediaThumbnailClick uiMediaViewAllClick uiReloadThumbs uiMediaThumbnailGotNewItems uiSuggestedUsersRendered dataSuggestedUsersSuccess uiGalleryOpened uiGalleryClosed uiGalleryMediaLoaded uiGalleryMediaFailed uiGalleryNavigatePrev uiGalleryNavigateNext uiCloseGallery uiShortcutEsc uiShortcutLeft uiShortcutRight dataGotTweet uiDidFollower dataFollowerAcceptSuccess dataFollowerDeclineSuccess dataFollowerAcceptFailure dataFollowerDeclineFailure dataFollower uiDidFollowerAccept uiDidFollowerDecline uiOpenCreateListDialog dataUserActionSuccess uiNeedsFacets dataHasFacets uiRefreshUserSearchModule dataUserSearchContent uiAddSavedSearch uiRemoveSavedSearch uiNavigate uiSavedSearchRemoveConfirm dataAddedSavedSearch dataRemovedSavedSearch uiCardMediaClick uiCardNewsClick uiCardSearchClick uiTweetStoryLinkClicked uiStoryTweetSent uiCardImageLoaded uiCardImageLoadError uiOneboxDisplayed uiOneboxViewAllClick uiEventOneboxClick uiStoryTweetAction uiTweetSent uiHasCollapsedStory uiHasExpandedStory uiSearchAssistanceAction uiReplyButtonTweetSuccess uiDidRetweetSuccess dataDidFavoriteTweet dataDidUnfavoriteTweet uiNeedsShareViaEmailDialog dataShareViaEmailSuccess uiMentionAction uiListAction uiDmAction dataProfilePopupSuccess uiItemSelected uiItemDeselected uiHashtagClick uiCashtagClick uiMapShow uiMapClick uiNavigationLinkClick uiTeardown dataPageRefresh dataPageFetch uiShortcutNavigateHome uiShortcutNavigateActivity uiShortcutNavigateConnect uiShortcutNavigateMentions uiShortcutNavigateDiscover uiShortcutNavigateProfile uiShortcutNavigateFavorites uiShortcutNavigateSettings uiShortcutNavigateLists dataBeforeNavigate uiPromotedLinkClick uiCloseDropdowns uiShowProfileNewWindow dataSetDebugData uiTweetDismissed uiDialogFadeInComplete uiDialogOpened uiDialogHidden uiDialogCloseRequested uiDialogClosed uiCloseDialog uiSigninOrSignupDialogOpened uiSigninOrSignupDialogClosed uiSignupButtonClicked uiCloseSigninOrSignupDialog dataGeoState dataGeoSearchResults dataGeoSearchResultsUnavailable uiRequestGeoState uiGeoPickerEnable uiGeoPickerTurnOn uiGeoPickerTurnOff uiGeoPickerChange uiGeoPickerSearch dataTweetError dataDirectMessageSuccess uiSendTweet uiSendTweetWithMedia uiSendDirectMessage uiOverrideTweetBoxOptions uiPrepareTweetBox uiShortcutShowTweetbox uiOpenReplyDialog uiDialogUpdateTitle uiTweetboxTweetError uiTweetBoxCondensed uiTweetBoxRemoveImage uiImagePickerRemove uiTweetBoxShowPreview uiTweetBoxHidePreview uiImagePickerAdd uiImagePickerFileReady uiImagePickerError uiImagePickerClick uiAutocompleteItemSelected uiAutocompleteEnter uiHideAutocomplete uiMoveSelectionUp uiMoveSelectionDown uiTextChanged uiSendAutocompleteData uiAutocompleteNeedsUpdate dataAutocompleteMatches uiGeoPickerOffer uiGeoPickerOpen uiGeoPickerSelect uiGeoPickerInteraction uiNeedsDMDialog uiDMDialogOpenedConversation uiDMDialogHasNewConversations uiDropdownOpened uiSearchQuery uiTypeaheadInputSubmit uiTypeaheadItemSelected uiTypeaheadSubmitQuery dataTypeaheadSuggestionsResults uiNeedsTypeaheadSuggestions uiTypeaheadRenderResults uiTypeaheadInputFocus uiTypeaheadItemComplete uiTypeaheadSetPreventDefault uiTypeaheadInputBlur uiTypeaheadInputChanged uiShortcutGotoSearch uiOpenKeyboardShortcutsDialog uiOpenRetweetDialog uiDidDeleteTweetSuccess uiOpenDeleteDialog uiNeedsListMembershipContent uiAddUserToList uiOpenListMembershipDialog dataGotListMembershipContent dataFailedToGetListMembershipContent dataDidAddUserToList dataFailedToRemoveUserFromList dataDidRemoveUserFromList dataFailedToAddUserToList uiOpenUpdateListDialog dataDidCreateList dataDidUpdateList dataFailedToCreateList dataFailedToUpdateList uiNeedsDMConversationList uiNeedsDMConversation uiDMDialogSendMessage uiDMDialogDeleteMessage dataRefreshDMs dataDMConversationListResult uiDMDialogOpenedConversationList uiDMDialogOpenedNewConversation uiDMBoxReset uiShortcutShowDMs uiShortcutNewDM dataDMSuccess dataDMConversationResult uiSendDM dataDMError dataSocialProofSuccess dataSocialProofFailure dataProfilePopupFailure uiWantsProfilePopup uiCloseProfilePopup uiHideSuggestionAction uiRemoveUserFromList uiCreateList uiShortcutShowGotoUser uiNeedsFeedbackData uiOpenFeedbackDialog dataFeedback uiToggleDebugFeedback dataDebugFeedbackChanged uiResendConfirmationEmail uiResetBounceLink", function (e) {
 	console.log = console.__proto__.log;
-	console.log(e);
+	// console.log(e);
 });
-*/
+
 
 function gnosticize(context, stopAtFirst) {
   var scope,
@@ -226,7 +218,7 @@ function gnosticize(context, stopAtFirst) {
   //TODO: Make sure narrower selector is working. Currently: not working on Trending Topics!
   var firstScopeTimer = $.now();
   scope = $(context).not('.rich-normalizer *, .twitter-hashtag');
-  console.log('Finished first scope selector:', $.now()-firstScopeTimer);
+  // console.log('Finished first scope selector:', $.now()-firstScopeTimer);
 
   //Stop at the first gnosticized element, to prevent iterating over the whole timeline when new tweets are added.
   //TODO: Check GET request for since_id || max_id; perform since_id as below, max_id should be inverted
@@ -234,20 +226,20 @@ function gnosticize(context, stopAtFirst) {
   	var secondScopeTimer = $.now();
   	scope = $(scope).each(function (n, el) {
   		if ($(this).hasClass('gnosticized')) {
-  			console.log('Stopping at:',n);
-  			//console.log(this);
+  			// console.log('Stopping at:',n);
+  			// console.log(this);
   			return false;
   		}
   		else {
   			toAct.push(this);
   		}
   	});
-  	console.log('Finished refining scope to new since gnosticized', $.now() - secondScopeTimer, 'ms');
+  	// console.log('Finished refining scope to new since gnosticized', $.now() - secondScopeTimer, 'ms');
 
   	scope = toAct;
   }
 
-  console.log('Gnosticizing', scope.length, 'elements...')
+  // console.log('Gnosticizing', scope.length, 'elements...')
 
   //Don't obscure the login form!
   if ($('.logged-out').length < 1) {
@@ -258,7 +250,7 @@ function gnosticize(context, stopAtFirst) {
   //Pretty sure this is what causes the long-ish init time on the extension. Not sure if it matters
   console.log = console.__proto__.log;
   var tweetsTimer = $.now();
-  //console.log('Starting on tweets:', tweetsTimer);
+  // console.log('Starting on tweets:', tweetsTimer);
   $('.tweet', scope).not('.gnosticized').each(function (i, tweet) {
     var o_screenName = $(this).data('screenName'),
         screenNameRE = new RegExp(o_screenName, 'i'),
@@ -273,9 +265,12 @@ function gnosticize(context, stopAtFirst) {
     if (typeof $(this).data('datascreenName') === 'undefined') {
       $(this).data('datascreenName', o_screenName);
       
-      new_screenName = (screenNameDiff > 0) ? anonUsername + Array(screenNameDiff + 1).join('.') : anonUsername;
-      $(this).data('screenName', new_screenName);
-      this.attributes['data-screen-name'].value = new_screenName;
+      //Leave screenName if it's the client's name (so it doesn't populate in Reply)
+      if (!clientNameRE.test(o_screenName)) {
+        new_screenName = (screenNameDiff > 0) ? anonUsername + Array(screenNameDiff + 1).join('.') : anonUsername;
+        $(this).data('screenName', new_screenName);
+        this.attributes['data-screen-name'].value = new_screenName;
+      }
     }
     
     if (o_mentions && typeof $(this).data('datamentions') === 'undefined') {
@@ -284,8 +279,7 @@ function gnosticize(context, stopAtFirst) {
       
       o_mentions = o_mentions.split(' ');
       o_mentions.forEach(function(el, n, arr) {
-        //TODO! Also strip out author's name, incase they include a mention of themself in the RT (e.g. @IGLevine style)
-        if (el.search(screenNameRE) < 0 && el.search(clientNameRE) < 0) {
+        if (!screenNameRE.test(el) && !clientNameRE.test(el)) {
           mentionDiff = el.length - anonUsername.length;
           if (mentionDiff > 0) {
             new_mentions.push(anonUsername + Array(mentionDiff+1).join(n));
@@ -295,28 +289,27 @@ function gnosticize(context, stopAtFirst) {
           }
         }
       });
-      
       $(this).data('mentions', new_mentions.join(' '));
       $(this).attr('data-mentions', new_mentions.join(' '));
     }
     });
-    console.log('Finished with tweets:', $.now() - tweetsTimer, 'ms');
+    // console.log('Finished with tweets:', $.now() - tweetsTimer, 'ms');
       //TODO: Abstract out? iterate through $(this).attributes and $(this).data() and store all orig values?
     	
       //Remove links to users' profiles, leave hashtag links
       var profileTimer = $.now();
-      //console.log('Starting profile link-scrubbing', profileTimer);
+      // console.log('Starting profile link-scrubbing', profileTimer);
     	$('.account-group, .pretty-link, .twitter-atreply, .js-action-profile-name', scope).not('.twitter-hashtag')
     		.not('.gnosticized').each(function (i) {
     			$(this).addClass('gnosticized');
     			$(this).data('orighref', this.href);
     			this.href = '/';
     	});
-    	console.log('Finished profile link-scrubbing', $.now() - profileTimer, 'ms');
+    	// console.log('Finished profile link-scrubbing', $.now() - profileTimer, 'ms');
 
     	//Anonymize generic title tooltips for user avatars:
     	var titleTimer = $.now();
-    	//console.log('Starting avatar title-scrubbing', titleTimer);
+    	// console.log('Starting avatar title-scrubbing', titleTimer);
     	$('.js-user-tipsy', scope)
     		.not('.gnosticized').each(function (i) {
     			$(this).addClass('gnosticized');
@@ -326,11 +319,11 @@ function gnosticize(context, stopAtFirst) {
     			$(this).data('orighref', this.href);
     			this.href = '/';
     	});
-    	console.log('Finished avatar title-scrubbing', $.now() - titleTimer, 'ms');
+    	// console.log('Finished avatar title-scrubbing', $.now() - titleTimer, 'ms');
 
     	//Anonymize twitter custom tooltips for user avatars:
     	var tooltipTimer = $.now();
-    	//console.log('Starting avatar tooltip-scrubbing', tooltipTimer);
+    	// console.log('Starting avatar tooltip-scrubbing', tooltipTimer);
     	$('.avatar.js-tooltip', scope)
     		.not('.gnosticized').each(function (i) {
     			$(this).addClass('gnosticized');
@@ -345,11 +338,11 @@ function gnosticize(context, stopAtFirst) {
     				this.title = anonHandle;
     			}
     	});
-    	console.log('Finished avatar tooltip-scrubbing', $.now() - tooltipTimer, 'ms');
+    	// console.log('Finished avatar tooltip-scrubbing', $.now() - tooltipTimer, 'ms');
 
     	//Replace mentions of username in dropdown list with anonUsername:
     	var actionsTimer = $.now();
-    	//console.log('Starting actions dropdown username-scrubbing', actionsTimer);
+    	// console.log('Starting actions dropdown username-scrubbing', actionsTimer);
     	$('.mention-text, .block-text, .unblock-text, .report-spam-text', document)
         .not('.gnosticized').each(function (i) {
       		var inner = this.innerText;
@@ -360,11 +353,11 @@ function gnosticize(context, stopAtFirst) {
       			this.innerText += ' for Spam';
       		}
     	});
-    	console.log('Finished actions dropdown username-scrubbing', $.now() - actionsTimer, 'ms');
+    	// console.log('Finished actions dropdown username-scrubbing', $.now() - actionsTimer, 'ms');
 
     	//Anonymize hashtags in the Trending Topics panel
     	var trendTimer = $.now();
-    	//console.log('Starting trending topics-scrubbing', trendTimer);
+    	// console.log('Starting trending topics-scrubbing', trendTimer);
     	$('.js-trend-item .js-nav', document)
     		.not('.gnosticized').each(function (i){
     			$(this).addClass('gnosticized');
@@ -378,10 +371,10 @@ function gnosticize(context, stopAtFirst) {
     				this.href = '/search?q=%22' + anonHashtag + '%22&amp;src=tren';
     			}
     	});
-    	console.log('Finished trending topics-scrubbing:', $.now() - trendTimer, 'ms');
+    	// console.log('Finished trending topics-scrubbing:', $.now() - trendTimer, 'ms');
 
-  console.log('Done gnosticizing', scope.length, 'elements:', $.now());
-  console.groupEnd();
+  // console.log('Done gnosticizing', scope.length, 'elements:', $.now());
+  // console.groupEnd();
   }
 }
 
