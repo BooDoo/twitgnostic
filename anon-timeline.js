@@ -178,15 +178,14 @@ $.ajaxSetup({
           }
 
 			if (targetMentions && maskedMentions) {
-				targetMentions = targetMentions.split(' ');
-				maskedMentions = maskedMentions.split(' ');
+        targetMentions = targetMentions.replace(clientNameRE, "").replace(/\s\s+/," ").trim().split(' ');
+        maskedMentions = maskedMentions.split(' ');
+        console.log("Checking", targetMentions, "against", maskedMentions);
         targetMentions.forEach(function (el, n, arr) {
-					if (el.length != clientUsername.length || el.search(clientNameRE) < 0) {
-						settings.data = settings.data.replace(maskedMentions[n], el);
-						//console.log('Replaced ' + maskedMentions[n] + ' with ' + targetMentions[n]);
-					}
-				});
-			}
+            settings.data = settings.data.replace(maskedMentions[n], el);
+            console.log('Replaced ' + maskedMentions[n] + ' with ' + targetMentions[n]);
+        });
+      }
 			//console.log(settings.data);
       //return false; //Prevents submitting post
 		}
