@@ -21,7 +21,7 @@ var anonCSS =   '.metadata.social-context, .social-context, .context, .follow-te
     '.url, .social-proof, #profile_popup.new-design .social-proof, #profile_popup .social-proof, .dogear, .view-profile, .profile-nav, ' +
     '.metadata.social-context, .discover-nav, [data-name="similarTo"] {display: none;}' +
     '.avatar {content:url("'+ anonAv +'");}' +
-    '.profile-header-inner {background-image:url("' + anonBG + '") !important;}' +
+    '.profile-header-inner, .mini-profile > .profile-summary {background-image:url("' + anonBG + '") !important;}' +
     '.username:before {content:"@' + anonUsername + '";font-size:12px;line-height:18px;visibility:visible;}' +
     '.js-mini-current-user > .screen-name:before {content:"@' + anonUsername + '";font-size:12px;line-height:18px;visibility:visible;}' +
     '.js-mini-current-user > .screen-name {visibility:hidden !important;}' +
