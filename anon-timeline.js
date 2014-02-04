@@ -23,6 +23,8 @@ var anonCSS =   '.metadata.social-context, .social-context, .context, .follow-te
     '.avatar {content:url("'+ anonAv +'");}' +
     '.profile-header-inner {background-image:url("' + anonBG + '") !important;}' +
     '.username:before {content:"@' + anonUsername + '";font-size:12px;line-height:18px;visibility:visible;}' +
+    '.js-mini-current-user > .screen-name:before {content:"@' + anonUsername + '";font-size:12px;line-height:18px;visibility:visible;}' +
+    '.js-mini-current-user > .screen-name {visibility:hidden !important;}' +
     '.username {font-size:0px;visibility:hidden;}' +
     '.fullname:before{content:"' + anonHandle + '";visibility:visible;font-size:14px;line-height:18px;}' +
     '.fullname{visibility:hidden;font-size:0px;}' +

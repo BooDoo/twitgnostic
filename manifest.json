@@ -1,6 +1,6 @@
 {
 	"name": "Twitgnostic",
-	"version": "0.46",
+	"version": "0.47",
 	"manifest_version": 2,
 
 	"content_scripts": [{
